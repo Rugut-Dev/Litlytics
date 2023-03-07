@@ -10,7 +10,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -26,9 +25,6 @@ import com.example.booksapp.viewModel.MainViewModel
 @ExperimentalComposeUiApi
 @Composable
 fun Library(viewModel: MainViewModel, actions: MainActions) {
-
-    val context = LocalContext.current
-    viewModel.getAllBooks(context = context)
 
     val booksState by viewModel.books.collectAsState(initial = ViewState.Loading)
     when(val result = booksState){
@@ -70,17 +66,17 @@ fun BookList(bookList: List<BookItem>, actions: MainActions) {
             )
         }
 
-        items(bookList) {book->
+        items(bookList.filter { it.title.contains(input.value, ignoreCase = true) }) {book->
             //Log.d("books", "books are ${Book.title}")
             CardItemBook(
                book.title,
                book.authors.toString(),
                book.thumbnailUrl,
-               book.categories
-            ) {
-                actions.gotoBookDetails.invoke(book.isbn)
-            }
-
+               book.categories,
+               onItemClick = {
+                   actions.gotoBookDetails.invoke(book.isbn)
+               }
+            )
         }
     }
 }

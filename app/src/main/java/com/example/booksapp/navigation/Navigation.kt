@@ -48,8 +48,9 @@ fun NavGraph() {
             val isbnNo = it.arguments?.getString(EndPoints.ID)
                 ?: throw IllegalStateException("'Book ISBN No' shouldn't be null")
 
-            //viewModel.getBookByID(context = context, isbnNO = isbnNo)
-            BookDetails(viewModel, actions)
+            viewModel.getBookById(context = context, isbnNo = isbnNo)
+            //BookDetails(viewModel, actions)
+            BookDetails(viewModel,isbnNo ,actions)
         }
     }
 }

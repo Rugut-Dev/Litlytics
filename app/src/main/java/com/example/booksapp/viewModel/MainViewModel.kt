@@ -14,7 +14,11 @@ import kotlinx.serialization.json.Json
 
 
 class MainViewModel : ViewModel(){
-    
+
+    val selectedTab: Int = 1
+    val onTabSelected: (Int) -> Unit = {}
+    val tabs = listOf("BooK Excerpts", "Description")
+
 
     private val _viewState = MutableStateFlow<ViewState>(ViewState.Loading)
     val books = _viewState.asStateFlow()
@@ -26,6 +30,7 @@ class MainViewModel : ViewModel(){
         prettyPrint = true
         isLenient = true
     }
+
     //get all books
     @OptIn(ExperimentalSerializationApi::class)
     fun getAllBooks(context: Context) = viewModelScope.launch{
@@ -36,6 +41,20 @@ class MainViewModel : ViewModel(){
             }
             //convert Json to list
             val bookList = formatJson.decodeFromString<List<BookItem>>(myJsonString)
+            _viewState.value = ViewState.Success(bookList)
+        }catch (e: Exception){
+            _viewState.value = ViewState.Error(e)
+        }
+    }
+    //get book by ID
+    fun getBookById(context: Context, isbnNo:String) = viewModelScope.launch{
+        try {
+            //read Json file
+            val myJsonString = context.assets.open("Books.json").bufferedReader().use {
+                it.readText()
+            }
+            //convert Json to list
+            val bookList = formatJson.decodeFromString<List<BookItem>>(myJsonString).filter{ it.isbn.contains(it.isbn, ignoreCase = true) }
             _viewState.value = ViewState.Success(bookList)
         }catch (e: Exception){
             _viewState.value = ViewState.Error(e)
