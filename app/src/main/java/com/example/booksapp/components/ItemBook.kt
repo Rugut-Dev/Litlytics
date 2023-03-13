@@ -25,7 +25,7 @@ fun ItemBook() {
 
 @Composable
 fun ImageLoader(){
-    val url = "https://s3.amazonaws.com/AKIAJC5RLADLUMVRPFDQ.book-thumb-images/ableson.jpg"
+    val url = "https://images-na.ssl-images-amazon.com/images/I/51ZyvZ9ZGJL._SX331_BO1,204,203,200_.jpg"
     Image(
         painter = rememberImagePainter(data = url),
         contentDescription = " ",

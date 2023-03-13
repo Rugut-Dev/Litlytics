@@ -1,5 +1,6 @@
 package com.example.booksapp.navigation
 
+import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -8,13 +9,17 @@ import androidx.hilt.navigation.HiltViewModelFactory
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.booksapp.BottomNavigationBar
 import com.example.booksapp.view.BookDetails
 import com.example.booksapp.view.Library
+import com.example.booksapp.view.MyActivityScreen
+import com.example.booksapp.view.SavedScreen
 import com.example.booksapp.viewModel.MainViewModel
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -26,10 +31,20 @@ object EndPoints {
 @Composable
 fun NavGraph() {
     val navController = rememberNavController()
+
+    Scaffold(
+        content = { NavigationHost(navController = navController)},
+        bottomBar = { BottomNavigationBar(navController = navController)}
+    )
+}
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun NavigationHost(navController: NavHostController){
+
     val actions = remember(navController) { MainActions(navController) }
     val context = LocalContext.current
 
-    NavHost(navController, startDestination = NavRoutes.Library.route) {
+    NavHost(navController=navController, startDestination = NavRoutes.Library.route) {
         // Library
         composable(NavRoutes.Library.route) {
             val viewModel: MainViewModel = viewModel(
@@ -38,7 +53,6 @@ fun NavGraph() {
             viewModel.getAllBooks(context = context)
             Library(viewModel, actions)
         }
-
       // Task Details
         composable(
             "${NavRoutes.BookDetails.route}/{id}",
@@ -51,6 +65,15 @@ fun NavGraph() {
             viewModel.getBookById(context = context, isbnNo = isbnNo)
             //BookDetails(viewModel, actions)
             BookDetails(viewModel,isbnNo ,actions)
+        }
+        //My Activity
+        composable(NavRoutes.MyActivity.route){
+            MyActivityScreen()
+        }
+
+        //Saved
+        composable(NavRoutes.Saved.route){
+            SavedScreen()
         }
     }
 }
