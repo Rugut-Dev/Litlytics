@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -17,6 +18,7 @@ import com.example.booksapp.components.ItemBook
 import com.example.booksapp.navigation.NavBarItems
 import com.example.booksapp.navigation.NavGraph
 import com.example.booksapp.ui.theme.BooksAppTheme
+import com.example.booksapp.viewModel.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @ExperimentalComposeUiApi
@@ -25,6 +27,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val authViewModel = viewModel(modelClass = AuthViewModel::class.java)
             BooksAppTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(

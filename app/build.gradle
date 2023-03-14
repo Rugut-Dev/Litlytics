@@ -10,6 +10,7 @@ plugins {
     id 'kotlin-kapt'
     //kotlin serialization
     id 'kotlinx-serialization'
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -73,6 +74,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1"
 
     implementation "com.google.dagger:hilt-android:2.45"
+    implementation 'com.google.firebase:firebase-database-ktx:20.1.0'
+    implementation 'com.google.firebase:firebase-auth-ktx:21.1.0'
     kapt "com.google.dagger:hilt-android-compiler:2.45"
 
 
