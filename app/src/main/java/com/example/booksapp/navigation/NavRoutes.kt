@@ -5,6 +5,7 @@ sealed class NavRoutes(val route:String){
     object MyActivity : NavRoutes("activity")
     object Saved : NavRoutes("saved")
     object BookDetails : NavRoutes("bookDetails")
+    object Upload : NavRoutes("upload")
 }
 //add book detail Screen
 //add upload page screen

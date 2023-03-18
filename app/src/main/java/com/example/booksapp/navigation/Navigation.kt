@@ -1,6 +1,7 @@
 package com.example.booksapp.navigation
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -29,13 +30,14 @@ object EndPoints {
 @Composable
 fun NavGraph() {
     val navController = rememberNavController()
-
-    Scaffold(
-        content = {
-                NavigationHost(navController = navController, authViewModel = AuthViewModel() )
-        },
-        bottomBar = { BottomNavigationBar(navController = navController)}
-    )
+    Box() {
+        Scaffold(
+            content = {
+                NavigationHost(navController = navController, authViewModel = AuthViewModel())
+            },
+            bottomBar = { BottomNavigationBar(navController = navController) }
+        )
+    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -109,30 +111,13 @@ fun NavigationHost(navController: NavHostController, authViewModel: com.example.
         composable(NavRoutes.Saved.route){
             SavedScreen()
         }
+
+        //Upload
+        composable(NavRoutes.Upload.route){
+            UploadScreen()
+        }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
      /**
@@ -184,6 +169,11 @@ class MainActions(navController: NavController) {
 
     val gotoBookList: () -> Unit = {
         navController.navigate(NavRoutes.Library.route)
+    }
+
+    //navigate to upload- view
+    val gotoUpload: () -> Unit = {
+        navController.navigate(NavRoutes.Upload.route)
     }
 }
 

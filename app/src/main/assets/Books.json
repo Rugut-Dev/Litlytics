@@ -242,15 +242,6 @@
     "categories": ["Java"]
   },
   {
-    "title": "Hibernate in Action (Chinese Edition)",
-    "pageCount": 400,
-    "publishedDate": { "$date": "1999-06-01T00:00:00.000-0700" },
-    "thumbnailUrl": "https://s3.amazonaws.com/AKIAJC5RLADLUMVRPFDQ.book-thumb-images/bauer-cn.jpg",
-    "status": "PUBLISH",
-    "authors": ["Christian Bauer", "Gavin King"],
-    "categories": ["Java"]
-  },
-  {
     "title": "Java Persistence with Hibernate",
     "isbn": "1932394885",
     "pageCount": 880,
@@ -1129,6 +1120,7 @@
   },
   {
     "title": "Portlets and Apache Portals",
+    "isbn": "9781932394540",
     "pageCount": 500,
     "publishedDate": { "$date": "2005-10-01T00:00:00.000-0700" },
     "thumbnailUrl": "https://s3.amazonaws.com/AKIAJC5RLADLUMVRPFDQ.book-thumb-images/hepper.jpg",

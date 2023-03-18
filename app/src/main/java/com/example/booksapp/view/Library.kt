@@ -1,15 +1,18 @@
 package com.example.booksapp.view
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -18,8 +21,53 @@ import com.example.booksapp.components.CardItemBook
 import com.example.booksapp.components.TextInputField
 import com.example.booksapp.model.BookItem
 import com.example.booksapp.navigation.MainActions
+import com.example.booksapp.ui.theme.HeadTile
 import com.example.booksapp.utils.ViewState
 import com.example.booksapp.viewModel.MainViewModel
+
+@OptIn(ExperimentalComposeUiApi::class)
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+@Composable
+fun Library(viewModel: MainViewModel, actions: MainActions) {
+    Box() {
+        Scaffold(
+            topBar = {
+                // top bar content
+            },
+            content = {
+                val booksState by viewModel.books.collectAsState(initial = ViewState.Loading)
+                when (val result = booksState) {
+                    ViewState.Empty -> Text(text = "No Books Found!")
+                    is ViewState.Error -> Text(text = "Error Occurred: ${result.exception}")
+                    ViewState.Loading -> Text(text = "Loading...")
+                    is ViewState.Success -> {
+                        BookList(result.data, actions)
+                    }
+                }
+            },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = { actions.gotoUpload() },
+                    modifier = Modifier
+                        .size(100.dp)
+                        .padding(16.dp)
+                        //Space between bottom nav and fab
+                        .absolutePadding(bottom = 16.dp, right = 16.dp),
+                    contentColor = Color.White,
+                    backgroundColor = HeadTile
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Add"
+                    )
+                }
+            },
+            isFloatingActionButtonDocked = true,
+            floatingActionButtonPosition = FabPosition.End
+        )
+    }
+}
+/**
 
 
 @ExperimentalComposeUiApi
@@ -36,7 +84,7 @@ fun Library(viewModel: MainViewModel, actions: MainActions) {
         }
     }
 }
-
+ **/
 @ExperimentalComposeUiApi
 @Composable
 fun BookList(bookList: List<BookItem>, actions: MainActions) {
@@ -78,7 +126,23 @@ fun BookList(bookList: List<BookItem>, actions: MainActions) {
                }
             )
         }
+
     }
+
+    /**
+    FloatingActionButton(
+        onClick = { /* do something */ },
+        modifier = Modifier
+            .size(56.dp)
+            .padding(16.dp)
+            .align()
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Add,
+            contentDescription = "Add"
+        )
+    }
+    **/
 }
 
 /**
