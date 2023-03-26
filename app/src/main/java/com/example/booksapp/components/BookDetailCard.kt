@@ -21,7 +21,8 @@ import com.example.booksapp.ui.theme.typography
 fun BookDetailsCard(
     title: String,
     authors: List<String>,
-    thumbnailUrl: String
+    thumbnailUrl: String,
+    isbnNo: String,
    // categories: List<String>
 ) {
 
@@ -43,11 +44,13 @@ fun BookDetailsCard(
                 .height(100.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(MaterialTheme.colors.onSurface),
-        )
+        ) {
+            // Content
+            BookImageContentView(title, authors, thumbnailUrl)
 
-        // Content
-        BookImageContentView(title, authors, thumbnailUrl)
 
+
+        }
 
     }
 }
@@ -94,6 +97,7 @@ fun BookImageContentView(
                 textAlign = TextAlign.Center,
                 color = Text.copy(0.7F)
             )
+
          //   Spacer(modifier = Modifier.height(12.dp))
            // Row {
              //   categories.forEach {
@@ -101,5 +105,10 @@ fun BookImageContentView(
                 //}
            // }
         }
+        //display list of notes from firebase here
+
+
     }
 }
+
+

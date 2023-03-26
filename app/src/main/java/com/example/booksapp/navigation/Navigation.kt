@@ -18,9 +18,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.booksapp.BottomNavigationBar
+import com.example.booksapp.repository.StorageRepository
 import com.example.booksapp.view.*
 import com.example.booksapp.viewModel.AuthViewModel
 import com.example.booksapp.viewModel.MainViewModel
+import com.example.booksapp.viewModel.NotesViewModel
 
 object EndPoints {
     const val ID = "id"
@@ -100,7 +102,7 @@ fun NavigationHost(navController: NavHostController, authViewModel: com.example.
 
             viewModel.getBookById(context = context, isbnNo = isbnNo)
             //BookDetails(viewModel, actions)
-            BookDetails(viewModel,isbnNo ,actions)
+            BookDetails(viewModel,isbnNo , bookRef = "", isbn = "", userId = "")
         }
         //My Activity
         composable(NavRoutes.MyActivity.route){
@@ -114,7 +116,10 @@ fun NavigationHost(navController: NavHostController, authViewModel: com.example.
 
         //Upload
         composable(NavRoutes.Upload.route){
-            UploadScreen()
+            UploadScreen(notesViewModel = NotesViewModel(repository = StorageRepository()),
+                onNavigate = {},
+                noteId = ""
+            )
         }
     }
 }

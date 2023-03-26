@@ -1,17 +1,38 @@
 package com.example.booksapp.view
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.Card
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.example.booksapp.components.BookDetailsCard
-import com.example.booksapp.navigation.MainActions
+import com.example.booksapp.model.Notes
+import com.example.booksapp.repository.StorageRepository
 import com.example.booksapp.utils.ViewState
 import com.example.booksapp.viewModel.MainViewModel
 
 @Composable
-fun BookDetails(viewModel: MainViewModel, isbnNo: String, actions: MainActions) {
+fun BookDetails(
+    viewModel: MainViewModel,
+    isbnNo: String,
+    userId: String,
+    bookRef: String,
+    isbn: String,
+
+) {
+
+    val storageRepository = StorageRepository()
+    val notes = storageRepository
+        //get all notes for particular book
+        .getAllNotes(bookRef, isbn, isbnNo).collectAsState(initial = ViewState.Loading)
+
 
     val listState = rememberLazyListState()
 
@@ -22,10 +43,54 @@ fun BookDetails(viewModel: MainViewModel, isbnNo: String, actions: MainActions) 
         ViewState.Loading -> Text(text = "Loading...")
         is ViewState.Success -> {
             val book = result.data.find { it.isbn == isbnNo }
-            BookDetailsCard(book?.title ?: "", book?.authors ?: listOf(), book?.thumbnailUrl ?: "")
+            BookDetailsCard(
+                book?.title ?: "",
+                book?.authors ?: listOf(),
+                book?.thumbnailUrl ?: "",
+                book?.isbn ?: "",
+            )
+        }
+    }
+
+}
+
+@Composable
+fun NoteCard(note: Notes) {
+    Card(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth(),
+        elevation = 8.dp,
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            // Display the note title
+            Text(
+                text = note.title,
+                style = MaterialTheme.typography.h6
+            )
+
+            // Display the note content
+            Text(
+                text = note.content,
+                style = MaterialTheme.typography.body1,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+
+            // Display the note timestamp
+            Text(
+                text = note.timestamp.toString(),
+                style = MaterialTheme.typography.caption,
+                modifier = Modifier.padding(top = 8.dp)
+            )
         }
     }
 }
+
+
 /**
 @Composable
 fun BookDetailCard(

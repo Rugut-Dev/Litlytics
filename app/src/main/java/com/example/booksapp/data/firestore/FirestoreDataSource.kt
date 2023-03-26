@@ -47,7 +47,6 @@ fun populateBooksCollection(context: Context) {
         formattedBooks.addAll(formatJson.decodeFromString<List<Book>>(formattedJsonString))
 
         // Add each book to the books collection
-
         for (book in formattedBooks) {
             val bookData = hashMapOf(
                 "title" to book.title,
@@ -64,7 +63,6 @@ fun populateBooksCollection(context: Context) {
     } catch (e: Exception) {
         Log.e(TAG, "Error populating books collection", e)
     }
-
 }
 
 private const val TAG = "MainActivity"
