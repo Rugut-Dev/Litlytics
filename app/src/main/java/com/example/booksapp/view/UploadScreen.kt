@@ -9,14 +9,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.booksapp.data.firestore.Book
+import com.example.booksapp.navigation.MainActions
+import com.example.booksapp.repository.StorageRepository
+import com.example.booksapp.ui.theme.Background
 import com.example.booksapp.viewModel.NoteUiState
 import com.example.booksapp.viewModel.NotesViewModel
 import com.google.firebase.firestore.FirebaseFirestore
@@ -27,24 +30,28 @@ import kotlinx.coroutines.launch
 fun UploadScreen(
     notesViewModel: NotesViewModel?,
     onNavigate: (String) -> Unit,
-    noteId: String
+    repository: StorageRepository,
+    actions:MainActions
+    //navController: NavController
 ) {
+    //get note id
+    fun getNoteId(): String = repository.notesRef.document().id.orEmpty()
+    val noteId = getNoteId()
+    //get mutable state of note id with initial value of blank, and update it with the note id
 
     val noteUiState = notesViewModel?.noteUiState ?: NoteUiState()
     //validate the form
-    val isFormsNotBlank = noteUiState?.title?.isNotBlank() == true &&
-            noteUiState.content.isNotBlank() &&
-            noteUiState.bookRef.isNotBlank() //&&
-
-
+    val isFormsNotBlank =
+        noteUiState.title.isNotBlank() && noteUiState.content.isNotBlank() && noteUiState.bookRef.isNotBlank()
     //check if note Id is not blank for update
-    val isNoteIdNotBlank = noteId.isNotBlank()
-    val icon = if (isFormsNotBlank) Icons.Default.Refresh
-    else Icons.Default.Check
+    val isNoteIdBlank = noteId.isEmpty()
+
+    //if upon launching the screen, the note fields are blank, then show an add icon, else show an edit icon
+    val icon = Icons.Filled.Add
 
     //fetch note if note id is not blank
     LaunchedEffect(key1 = Unit) {
-        if (isNoteIdNotBlank) {
+        if (!isNoteIdBlank) {
             notesViewModel?.getNote(noteId)
         }else{
             notesViewModel?.resetState()
@@ -63,13 +70,29 @@ fun UploadScreen(
 
     Scaffold(
         scaffoldState = scaffoldState,
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "Upload") },
+                navigationIcon = {
+                    IconButton(onClick = { actions.upPress() }) {
+                        Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = null)
+                    }
+                }
+            )
+        },
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                if (isNoteIdNotBlank){
+            FloatingActionButton(
+                onClick = {
+                    if(isFormsNotBlank){
+                        notesViewModel?.addNote()
+                    }
+                    /**
+                if (!isNoteIdBlank && isFormsNotBlank){
                     notesViewModel?.updateNote(noteId)
-                }else{
+                }else if (isNoteIdBlank && isFormsNotBlank){
                     notesViewModel?.addNote()
                 }
+                **/
             }) {
                 Icon(imageVector = icon, contentDescription = null)
             }
@@ -78,30 +101,32 @@ fun UploadScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(color = Color.Blue)
+                .background(color = Background)
                 .padding(padding)
         ) {
             //snack bar
             if (noteUiState.noteAddedStatus) {
                 scope.launch {
-                    scaffoldState.snackbarHostState
-                        .showSnackbar(
-                            message = "Note added successfully",
-                            actionLabel = "Ok"
-                        )
+                    val snackbarResult = scaffoldState.snackbarHostState.showSnackbar(
+                        message = "Note added successfully",
+                        actionLabel = "Ok"
+                    )
+                    if (snackbarResult == SnackbarResult.ActionPerformed) {
+                        onNavigate.invoke("library")
+                    }
                     notesViewModel?.resetNoteAddedStatus()
-                    //onNavigate.invoke()
                 }
             }
             if (noteUiState.updateNoteStatus) {
                 scope.launch {
-                    scaffoldState.snackbarHostState
-                        .showSnackbar(
+                    val snackbarResult = scaffoldState.snackbarHostState.showSnackbar(
                             message = "Note updated successfully",
                             actionLabel = "Ok"
                         )
+                    if (snackbarResult == SnackbarResult.ActionPerformed) {
+                        onNavigate.invoke("library")
+                    }
                     notesViewModel?.resetNoteAddedStatus()
-                    //onNavigate.invoke()
                 }
             }
 
@@ -211,7 +236,7 @@ fun UploadScreen(
             OutlinedTextField(
                 value = noteUiState.content,
                 onValueChange = {
-                    Log.d("NoteContent", "onValueChange called with value: $it")
+                   // Log.d("NoteContent", "onValueChange called with value: $it")
                     notesViewModel?.onContentChange(it)
                 },
                 label = { Text(text = "Type Note") },
@@ -221,7 +246,6 @@ fun UploadScreen(
                     .padding(8.dp),
                 keyboardOptions = KeyboardOptions.Default
             )
-
         }
     }
 }

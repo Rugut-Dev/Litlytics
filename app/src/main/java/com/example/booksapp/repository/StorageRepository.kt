@@ -1,6 +1,7 @@
 package com.example.booksapp.repository
 
 import com.example.booksapp.model.Notes
+import com.example.booksapp.viewModel.NotesUiState
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.CollectionReference
@@ -23,7 +24,7 @@ class StorageRepository {
     fun getUserId(): String = Firebase.auth.currentUser?.uid.orEmpty()
 
     //notes collection reference
-    private val notesRef: CollectionReference = Firebase
+    val notesRef: CollectionReference = Firebase
         .firestore.collection(NOTES_COLLECTION_REF)
 
     //books collection reference
@@ -33,9 +34,6 @@ class StorageRepository {
 
     //get User Notes for particular book
     fun getUserNotes(
-        user_id: String,
-        book_ref: String,
-        isbn: String,
         isbnNo: String
     ): Flow<Resources<List<Notes>>> = callbackFlow {
         var snapShotStateListener: ListenerRegistration? = null
@@ -56,7 +54,7 @@ class StorageRepository {
 
                 }
         } catch (e: Exception) {
-            trySend(Resources.Error(e?.cause))
+            trySend(Resources.Error(e.cause))
             e.printStackTrace()
         }
 
@@ -66,30 +64,29 @@ class StorageRepository {
     }
 
     //get all notes for particular book
-    fun getAllNotes(
-        book_ref: String,
-        isbn: String,
-        isbnNo: String
-    ): Flow<Resources<List<Notes>>> = callbackFlow {
+    fun getAllNotes(isbn: String, isbnNo: String): Flow<NotesUiState> = callbackFlow {
         var snapShotStateListener: ListenerRegistration? = null
 
         try {
+            trySend(NotesUiState.Loading).isSuccess
+
             snapShotStateListener = notesRef
                 .orderBy("page_ref")
-                .whereEqualTo("book_ref", booksRef.document(isbn))
+                //.whereEqualTo("book_ref", booksRef.document(isbn))
+                    //listen to isbnNo passed from navigation to book details screen and compare with book_ref
                 .whereEqualTo("book_ref", isbnNo)
                 .addSnapshotListener { snapshot, e ->
                     val response = if (snapshot != null) {
+                        //print out isbnNo in this function to logcat
                         val notes = snapshot.toObjects(Notes::class.java)
-                        Resources.Success(data = notes)
+                        NotesUiState.Success(notes)
                     } else {
-                        Resources.Error(throwable = e?.cause)
+                        NotesUiState.Error(e?.cause)
                     }
-                    trySend(response)
-
+                    trySend(response).isSuccess
                 }
         } catch (e: Exception) {
-            trySend(Resources.Error(e?.cause))
+            trySend(NotesUiState.Error(e.cause)).isSuccess
             e.printStackTrace()
         }
 
@@ -97,6 +94,7 @@ class StorageRepository {
             snapShotStateListener?.remove()
         }
     }
+
 
 
     //get note by id
@@ -193,6 +191,8 @@ class StorageRepository {
                 }
             }
     }
+    //sign out
+    fun signOut() = Firebase.auth.signOut()
 
 }
 //sealed class for retrieving data from firestore

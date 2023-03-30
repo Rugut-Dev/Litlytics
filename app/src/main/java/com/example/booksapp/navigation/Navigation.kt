@@ -17,7 +17,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.booksapp.BottomNavigationBar
 import com.example.booksapp.repository.StorageRepository
 import com.example.booksapp.view.*
 import com.example.booksapp.viewModel.AuthViewModel
@@ -37,7 +36,7 @@ fun NavGraph() {
             content = {
                 NavigationHost(navController = navController, authViewModel = AuthViewModel())
             },
-            bottomBar = { BottomNavigationBar(navController = navController) }
+            bottomBar = { /*BottomNavigationBar(navController = navController)*/ }
         )
     }
 }
@@ -88,7 +87,7 @@ fun NavigationHost(navController: NavHostController, authViewModel: com.example.
                 factory = HiltViewModelFactory(LocalContext.current, it)
             )
             viewModel.getAllBooks(context = context)
-            Library(viewModel, actions)
+            Library(viewModel, actions, notesViewModel = NotesViewModel(repository = StorageRepository()))
         }
 
         // Task Details
@@ -102,7 +101,15 @@ fun NavigationHost(navController: NavHostController, authViewModel: com.example.
 
             viewModel.getBookById(context = context, isbnNo = isbnNo)
             //BookDetails(viewModel, actions)
-            BookDetails(viewModel,isbnNo , bookRef = "", isbn = "", userId = "")
+            BookDetails(
+                viewModel,
+                isbnNo,
+                book_ref = "",
+                isbn = "",
+                user_id = "",
+                notesViewModel = NotesViewModel(repository = StorageRepository()),
+                actions = actions
+            )
         }
         //My Activity
         composable(NavRoutes.MyActivity.route){
@@ -117,8 +124,11 @@ fun NavigationHost(navController: NavHostController, authViewModel: com.example.
         //Upload
         composable(NavRoutes.Upload.route){
             UploadScreen(notesViewModel = NotesViewModel(repository = StorageRepository()),
-                onNavigate = {},
-                noteId = ""
+                onNavigate = {
+                    navController.navigate("library")
+                },
+                repository = StorageRepository(),
+                actions = actions
             )
         }
     }
@@ -175,7 +185,10 @@ class MainActions(navController: NavController) {
     val gotoBookList: () -> Unit = {
         navController.navigate(NavRoutes.Library.route)
     }
-
+    //navigate to login- view
+    val gotoLogin: () -> Unit = {
+        navController.navigate(RegRoutes.Login.route)
+    }
     //navigate to upload- view
     val gotoUpload: () -> Unit = {
         navController.navigate(NavRoutes.Upload.route)

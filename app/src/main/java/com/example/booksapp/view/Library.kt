@@ -8,8 +8,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,15 +26,48 @@ import com.example.booksapp.navigation.MainActions
 import com.example.booksapp.ui.theme.HeadTile
 import com.example.booksapp.utils.ViewState
 import com.example.booksapp.viewModel.MainViewModel
+import com.example.booksapp.viewModel.NotesViewModel
 
 @OptIn(ExperimentalComposeUiApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun Library(viewModel: MainViewModel, actions: MainActions) {
+fun Library(viewModel: MainViewModel, actions: MainActions, notesViewModel: NotesViewModel?) {
     Box() {
         Scaffold(
             topBar = {
-                // top bar content
+                TopAppBar(
+                    //Row for the title and log out button
+                    title = {
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            Row(
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.app_name),
+                                    textAlign = TextAlign.Center,
+                                    color = com.example.booksapp.ui.theme.Text
+                                )
+                                Spacer(Modifier.weight(1f)) // Add a spacer to push the button to the right
+                                IconButton(
+                                    onClick = {
+                                        notesViewModel?.signOut()
+                                        actions.gotoLogin()
+                                    },
+                                    modifier = Modifier
+                                        .size(60.dp)
+                                        .padding(end = 16.dp, top = 8.dp, bottom = 8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.AccountBox,
+                                        contentDescription = "Log Out",
+                                        tint = Color.LightGray
+                                    )
+                                }
+                            }
+                        }
+                    }
+                )
             },
             content = {
                 val booksState by viewModel.books.collectAsState(initial = ViewState.Loading)
@@ -105,13 +140,6 @@ fun BookList(bookList: List<BookItem>, actions: MainActions) {
             TextInputField(label = stringResource(R.string.search_text), value = input.value, onValueChanged = {
                 input.value = it
             } )
-        }
-        item{
-            Text(text = "Books",
-                style = MaterialTheme.typography.subtitle1,
-                color = MaterialTheme.colors.primaryVariant,
-                textAlign = TextAlign.Start
-            )
         }
 
         items(bookList.filter { it.title.contains(input.value, ignoreCase = true) }) {book->
