@@ -7,7 +7,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.booksapp.model.Notes
-import com.example.booksapp.repository.Resources
 import com.example.booksapp.repository.StorageRepository
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
@@ -17,8 +16,6 @@ class NotesViewModel(
     private val repository:StorageRepository
 ): ViewModel() {
     var noteUiState by mutableStateOf(NoteUiState())
-        private set
-    var homeUiState by mutableStateOf(HomeUiState())
         private set
     var notesUiState by mutableStateOf<NotesUiState>(NotesUiState.Loading)
         private set
@@ -36,30 +33,95 @@ class NotesViewModel(
         get() = repository.getUserId()
 
     //get all notes
+    fun getAllNotes(isbnNo: String) {
+        viewModelScope.launch {
+            try {
+                notesUiState = NotesUiState.Loading
+                repository.getAllNotes(isbnNo).collect { notes ->
+                    if (notes.isEmpty()) {
+                        notesUiState = NotesUiState.Error(Throwable("No notes found"))
+                    } else {
+                        notesUiState = NotesUiState.Success(notes)
+                        Log .d("NotesA", "NotesfoundA")
+                    }
+                }
+            } catch (e: Exception) {
+                notesUiState = NotesUiState.Error(e)
+            }
+        }
+    }
+
+
+    /**
     fun getAllNotes(isbn: String, isbnNo: String) {
         viewModelScope.launch {
             try {
-                repository.getAllNotes(isbn, isbnNo).collect { notesUiState = it }
+                repository.getAllNotes(isbn, isbnNo).collect() {
+                    notesUiState = NotesUiState.Success(notes)
+                }
+
+                //update UI state
+
+               // notesUiState = NotesUiState.Success(notes)
+                    //.collect {
+
+                  //  notesUiState = NotesUiState.Success(notes)
+
+                 //   }
             } catch (e: Exception) {
                 notesUiState = NotesUiState.Error(e.cause)
             }
         }
     }
-
+**/
     fun deleteNote(noteId: String) {
         viewModelScope.launch {
             try {
-                repository.deleteNote(userId, noteId, onComplete = {
-                    homeUiState = homeUiState.copy(noteDeletedStatus = !homeUiState.noteDeletedStatus)
+                repository.deleteNote(noteId, onComplete = { success, userId ->
+                    if (success) {
+                        // Remove the deleted note from the list
+                        //val notes = (notesUiState as? NotesUiState.Success)?.notes.orEmpty()
+                         //   .filter { it.documentId != noteId }
+                        notesUiState = NotesUiState.Loading
+                        // print to log
+                        Log.d("NoteDeleted", "Note deleted successfully")
+                    } else {
+                        notesUiState = NotesUiState.Error(Throwable("Failed to delete note"))
+                    }
+                    // set state to loading
+
                 })
-                //Update the UI state to indicate that the note was deleted
-                homeUiState = homeUiState.copy(noteDeletedStatus = true)
+            } catch (e: Exception) {
+                notesUiState = NotesUiState.Error(e)
+            }
+        }
+    }
+
+
+
+    /**
+    fun deleteNote(noteId: String) {
+        viewModelScope.launch {
+            try {
+                //initialize notesUiState
+                //var notesUiState = NotesUiState.Loading
+                repository.deleteNote(noteId, onComplete = { success, userId ->
+                    if (success) {
+                        homeUiState = homeUiState.copy(noteDeletedStatus = !homeUiState.noteDeletedStatus)
+                        // print to log
+                        Log.d("NoteDeleted", "Note deleted successfully")
+                        //update UI state after note is deleted
+                    } else {
+                        homeUiState = homeUiState.copy(noteDeletedStatus = false)
+                    }
+                })
             } catch (e: Exception) {
                 homeUiState = homeUiState.copy(noteDeletedStatus = false)
             }
         }
     }
 
+**/
     fun signOut() = repository.signOut()
 
     //title state
@@ -147,6 +209,7 @@ class NotesViewModel(
     fun resetState(){
         noteUiState = NoteUiState()
     }
+
 }
 
 //data class for ui state
@@ -160,10 +223,6 @@ data class NoteUiState(
     val selectedNote: Notes? = null,
     val isLoading: Boolean = false,
     val error: String = ""
-)
-data class HomeUiState(
-    val notesList: Resources<List<Notes>> = Resources.Loading(),
-    val noteDeletedStatus: Boolean = false,
 )
 //sealed class for notes
 sealed class NotesUiState {

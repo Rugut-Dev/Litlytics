@@ -104,9 +104,6 @@ fun NavigationHost(navController: NavHostController, authViewModel: com.example.
             BookDetails(
                 viewModel,
                 isbnNo,
-                book_ref = "",
-                isbn = "",
-                user_id = "",
                 notesViewModel = NotesViewModel(repository = StorageRepository()),
                 actions = actions
             )

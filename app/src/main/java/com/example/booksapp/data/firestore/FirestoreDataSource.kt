@@ -54,7 +54,7 @@ fun populateBooksCollection(context: Context) {
             )
             db.collection("books").document(book.isbn).set(bookData)
                 .addOnSuccessListener {
-                    Log.d(TAG, "Book added: ${book.title}")
+                   // Log.d(TAG, "Book added: ${book.title}")
                 }
                 .addOnFailureListener { e ->
                     Log.e(TAG, "Error adding book: ${book.title}", e)

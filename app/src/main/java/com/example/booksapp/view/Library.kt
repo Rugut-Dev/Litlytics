@@ -49,10 +49,36 @@ fun Library(viewModel: MainViewModel, actions: MainActions, notesViewModel: Note
                                     color = com.example.booksapp.ui.theme.Text
                                 )
                                 Spacer(Modifier.weight(1f)) // Add a spacer to push the button to the right
+                                val showDialog = remember { mutableStateOf(false) }
+
+                                if (showDialog.value) {
+                                    AlertDialog(
+                                        onDismissRequest = { showDialog.value = false },
+                                        title = { Text("Are you sure you want to log out?") },
+                                        confirmButton = {
+                                            Button(
+                                                onClick = {
+                                                    notesViewModel?.signOut()
+                                                    actions.gotoLogin()
+                                                    showDialog.value = false
+                                                }
+                                            ) {
+                                                Text("Log out")
+                                            }
+                                        },
+                                        dismissButton = {
+                                            Button(
+                                                onClick = { showDialog.value = false }
+                                            ) {
+                                                Text("Cancel")
+                                            }
+                                        }
+                                    )
+                                }
                                 IconButton(
                                     onClick = {
-                                        notesViewModel?.signOut()
-                                        actions.gotoLogin()
+                                        //ahow alert dialog before logging out
+                                        showDialog.value = true
                                     },
                                     modifier = Modifier
                                         .size(60.dp)

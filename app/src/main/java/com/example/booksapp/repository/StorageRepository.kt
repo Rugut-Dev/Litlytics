@@ -1,7 +1,7 @@
 package com.example.booksapp.repository
 
+import android.util.Log
 import com.example.booksapp.model.Notes
-import com.example.booksapp.viewModel.NotesUiState
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.CollectionReference
@@ -22,6 +22,7 @@ class StorageRepository {
 
     //get current user id
     fun getUserId(): String = Firebase.auth.currentUser?.uid.orEmpty()
+    val usId = getUserId()
 
     //notes collection reference
     val notesRef: CollectionReference = Firebase
@@ -64,6 +65,35 @@ class StorageRepository {
     }
 
     //get all notes for particular book
+    fun getAllNotes(isbnNo: String): Flow<List<Notes>> = callbackFlow {
+        var snapShotStateListener: ListenerRegistration? = null
+
+        try {
+            trySend(
+                emptyList<Notes>()
+            ).isSuccess
+            snapShotStateListener = notesRef
+                .orderBy("page_ref")
+                .whereEqualTo("book_ref", isbnNo)
+                .addSnapshotListener { snapshot, e ->
+                   if (snapshot != null) {
+                        //print out isbnNo in this function to logcat
+                        Log .d("notey", "found")
+                        val notes = snapshot.toObjects(Notes::class.java)
+                        trySend(notes).isSuccess
+                    }
+                }
+        } catch (e: Exception) {
+            trySend(emptyList<Notes>()).isSuccess
+            e.printStackTrace()
+        }
+
+        awaitClose {
+            snapShotStateListener?.remove()
+        }
+    }
+
+    /**
     fun getAllNotes(isbn: String, isbnNo: String): Flow<NotesUiState> = callbackFlow {
         var snapShotStateListener: ListenerRegistration? = null
 
@@ -72,8 +102,6 @@ class StorageRepository {
 
             snapShotStateListener = notesRef
                 .orderBy("page_ref")
-                //.whereEqualTo("book_ref", booksRef.document(isbn))
-                    //listen to isbnNo passed from navigation to book details screen and compare with book_ref
                 .whereEqualTo("book_ref", isbnNo)
                 .addSnapshotListener { snapshot, e ->
                     val response = if (snapshot != null) {
@@ -95,7 +123,7 @@ class StorageRepository {
         }
     }
 
-
+**/
 
     //get note by id
     fun getNote(
@@ -140,24 +168,31 @@ class StorageRepository {
     //delete note if user is owner
     fun deleteNote(
         noteId: String,
-        user_id: String,
-        onComplete: (Boolean) -> Unit,
+        onComplete: (Boolean, String?) -> Unit,
     ) {
         notesRef
             .document(noteId)
             .get()
-            .addOnSuccessListener {
-                val note = it.toObject(Notes::class.java)
-                if (note?.user_id == user_id) {
-                    notesRef
-                        .document(noteId)
-                        .delete()
-                        .addOnCompleteListener { result ->
-                            onComplete.invoke(result.isSuccessful)
-                        }
+            .addOnSuccessListener { documentSnapshot ->
+                val note = documentSnapshot.toObject(Notes::class.java)
+                if (note != null) {
+                    val userId = note.user_id
+                    if(userId == usId) {
+                        Log.d("StorageRepository userId", "deleteNote: $userId")
+                        Log .d("usId value:","val: $usId")
+                        notesRef
+                            .document(noteId)
+                            .delete()
+                            .addOnCompleteListener { result ->
+                                onComplete.invoke(result.isSuccessful, userId)
+                            }
+                    }
+                } else {
+                    onComplete.invoke(false, null)
                 }
             }
     }
+
 
 
     //update note if user is owner

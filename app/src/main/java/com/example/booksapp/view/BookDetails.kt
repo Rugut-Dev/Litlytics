@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,16 +18,15 @@ import androidx.compose.ui.unit.dp
 import com.example.booksapp.components.BookDetailsCard
 import com.example.booksapp.model.Notes
 import com.example.booksapp.navigation.MainActions
-import com.example.booksapp.repository.StorageRepository
 import com.example.booksapp.ui.theme.Background
 import com.example.booksapp.ui.theme.Card
 import com.example.booksapp.ui.theme.HeadTile
 import com.example.booksapp.ui.theme.Primary
 import com.example.booksapp.utils.ViewState
-import com.example.booksapp.viewModel.HomeUiState
 import com.example.booksapp.viewModel.MainViewModel
 import com.example.booksapp.viewModel.NotesUiState
 import com.example.booksapp.viewModel.NotesViewModel
+import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -35,26 +35,13 @@ import java.util.*
 fun BookDetails(
     viewModel: MainViewModel,
     isbnNo: String,//passed from library
-    user_id: String,
-    book_ref: String,
-    isbn: String,
     notesViewModel: NotesViewModel?,
     actions: MainActions
 ) {
-    val homeUiState = notesViewModel?.homeUiState ?: HomeUiState()
-    val scope = rememberCoroutineScope()
-    val storageRepository = StorageRepository()
+    val notesUiState = notesViewModel?.notesUiState ?: NotesUiState.Loading
 
-    val notesUiState = remember {
-        mutableStateOf<NotesUiState>(NotesUiState.Loading)
-    }
-
-    if (notesUiState.value == NotesUiState.Loading) {
-        LaunchedEffect(isbnNo, book_ref) {
-            storageRepository.getAllNotes(isbn, isbnNo).collect { notesUiStateValue ->
-                notesUiState.value = notesUiStateValue
-            }
-        }
+    if (notesUiState == NotesUiState.Loading) {
+            notesViewModel?.getAllNotes(isbnNo)
     }
 
     val scaffoldState = rememberScaffoldState()
@@ -119,15 +106,16 @@ Box() {
                     }
                 }
                 //list of notes exhibiting the notes card
-                when (val result = notesUiState.value) {
+                when (val result = notesUiState) {
                     NotesUiState.Loading -> item {
                         Text(text = "Loading...")
                     }
                     is NotesUiState.Error -> item {
+                       // Log .d("NotesUiState1", "Loading Notes")
                         Text(text = "Error Occurred: ${result.throwable}")
                     }
                     is NotesUiState.Success -> {
-                        val notes = result.notes
+                        val notes = result.notes.toMutableList()
                         if (notes.isEmpty()) {
                             item {
                                 Text(text = "No notes found!")
@@ -135,14 +123,16 @@ Box() {
                         } else {
                             notes.forEach { note ->
                                 item {
-                                    NoteItem(notes = note, notesViewModel = notesViewModel)
+                                    NoteItem(notes = note, notesViewModel = notesViewModel!!)
                                 }
                             }
                         }
                     }
                 }
+
             }
         },
+
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { actions.gotoUpload() },
@@ -170,9 +160,9 @@ Box() {
 @Composable
 fun NoteItem(
     notes: Notes,
-    notesViewModel: NotesViewModel?
+    notesViewModel: NotesViewModel
 ) {
-    val repository = StorageRepository()
+    //val repository = StorageRepository()
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -211,22 +201,73 @@ fun NoteItem(
             )
         }
         //delete button
-        IconButton(
-            onClick = {
-                notesViewModel?.deleteNote(
-                    noteId = notes.documentId,
-                )
-            },
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(8.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Delete,
-                contentDescription = "Delete Note",
-                tint = Primary
+        //show button if the user is the owner of the note
+        var showDialog by remember { mutableStateOf(false) }
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                    showDialog = false
+                },
+                title = {
+                    Text(text = "Delete Note")
+                },
+                text = {
+                    Text(text = "Are you sure you want to delete this note?")
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        notesViewModel.deleteNote(noteId = notes.documentId)
+                        showDialog = false
+                    }) {
+                        Text("Delete")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showDialog = false
+                    }) {
+                        Text("Cancel")
+                    }
+                }
             )
         }
+
+        if (notes.user_id == FirebaseAuth.getInstance().currentUser?.uid) {
+            IconButton(
+                onClick = {
+                    showDialog = true
+                },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete Note",
+                    tint = Primary
+                )
+            }
+        }
+        //edit button
+        //show button if the user is the owner of the note
+        if (notes.user_id == FirebaseAuth.getInstance().currentUser?.uid) {
+            IconButton(
+                onClick = {
+                          // navigate to upload note screen with the note data
+
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit Note",
+                    tint = Primary
+                )
+            }
+        }
+
     }
 }
 
