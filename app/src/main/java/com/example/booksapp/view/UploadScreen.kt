@@ -11,6 +11,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.booksapp.data.firestore.Book
 import com.example.booksapp.navigation.MainActions
-import com.example.booksapp.repository.StorageRepository
 import com.example.booksapp.ui.theme.Background
 import com.example.booksapp.viewModel.NoteUiState
 import com.example.booksapp.viewModel.NotesViewModel
@@ -30,14 +30,11 @@ import kotlinx.coroutines.launch
 fun UploadScreen(
     notesViewModel: NotesViewModel?,
     onNavigate: (String) -> Unit,
-    repository: StorageRepository,
-    actions:MainActions
+    actions:MainActions,
+    noteId: String,
     //navController: NavController
 ) {
-    //get note id
-    fun getNoteId(): String = repository.notesRef.document().id.orEmpty()
-    val noteId = getNoteId()
-    //get mutable state of note id with initial value of blank, and update it with the note id
+
 
     val noteUiState = notesViewModel?.noteUiState ?: NoteUiState()
     //validate the form
@@ -47,7 +44,11 @@ fun UploadScreen(
     val isNoteIdBlank = noteId.isEmpty()
 
     //if upon launching the screen, the note fields are blank, then show an add icon, else show an edit icon
-    val icon = Icons.Filled.Add
+    val icon = if(isNoteIdBlank){
+        Icons.Filled.Add
+    }else {
+        Icons.Filled.Refresh
+    }
 
     //fetch note if note id is not blank
     LaunchedEffect(key1 = Unit) {
@@ -83,16 +84,11 @@ fun UploadScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    if(isFormsNotBlank){
+                    if(isFormsNotBlank && isNoteIdBlank){
                         notesViewModel?.addNote()
+                    }else{
+                        notesViewModel?.updateNote(noteId)
                     }
-                    /**
-                if (!isNoteIdBlank && isFormsNotBlank){
-                    notesViewModel?.updateNote(noteId)
-                }else if (isNoteIdBlank && isFormsNotBlank){
-                    notesViewModel?.addNote()
-                }
-                **/
             }) {
                 Icon(imageVector = icon, contentDescription = null)
             }
@@ -124,7 +120,7 @@ fun UploadScreen(
                             actionLabel = "Ok"
                         )
                     if (snackbarResult == SnackbarResult.ActionPerformed) {
-                        onNavigate.invoke("library")
+                        actions.upPress()
                     }
                     notesViewModel?.resetNoteAddedStatus()
                 }

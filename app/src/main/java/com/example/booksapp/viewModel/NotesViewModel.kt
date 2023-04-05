@@ -52,43 +52,17 @@ class NotesViewModel(
     }
 
 
-    /**
-    fun getAllNotes(isbn: String, isbnNo: String) {
-        viewModelScope.launch {
-            try {
-                repository.getAllNotes(isbn, isbnNo).collect() {
-                    notesUiState = NotesUiState.Success(notes)
-                }
-
-                //update UI state
-
-               // notesUiState = NotesUiState.Success(notes)
-                    //.collect {
-
-                  //  notesUiState = NotesUiState.Success(notes)
-
-                 //   }
-            } catch (e: Exception) {
-                notesUiState = NotesUiState.Error(e.cause)
-            }
-        }
-    }
-**/
     fun deleteNote(noteId: String) {
         viewModelScope.launch {
             try {
                 repository.deleteNote(noteId, onComplete = { success, userId ->
                     if (success) {
-                        // Remove the deleted note from the list
-                        //val notes = (notesUiState as? NotesUiState.Success)?.notes.orEmpty()
-                         //   .filter { it.documentId != noteId }
                         notesUiState = NotesUiState.Loading
                         // print to log
                         Log.d("NoteDeleted", "Note deleted successfully")
                     } else {
                         notesUiState = NotesUiState.Error(Throwable("Failed to delete note"))
                     }
-                    // set state to loading
 
                 })
             } catch (e: Exception) {
@@ -98,30 +72,6 @@ class NotesViewModel(
     }
 
 
-
-    /**
-    fun deleteNote(noteId: String) {
-        viewModelScope.launch {
-            try {
-                //initialize notesUiState
-                //var notesUiState = NotesUiState.Loading
-                repository.deleteNote(noteId, onComplete = { success, userId ->
-                    if (success) {
-                        homeUiState = homeUiState.copy(noteDeletedStatus = !homeUiState.noteDeletedStatus)
-                        // print to log
-                        Log.d("NoteDeleted", "Note deleted successfully")
-                        //update UI state after note is deleted
-                    } else {
-                        homeUiState = homeUiState.copy(noteDeletedStatus = false)
-                    }
-                })
-            } catch (e: Exception) {
-                homeUiState = homeUiState.copy(noteDeletedStatus = false)
-            }
-        }
-    }
-
-**/
     fun signOut() = repository.signOut()
 
     //title state
@@ -187,7 +137,6 @@ class NotesViewModel(
 
     //update note
     fun updateNote(noteId: String) {
-        if (hasUser && "user_id" == user!!.uid) {
             repository.updateNote(
                 noteId = noteId,
                 title = noteUiState.title,
@@ -199,7 +148,6 @@ class NotesViewModel(
             ){
                 noteUiState = noteUiState.copy(updateNoteStatus = it)
             }
-        }
     }
 
     fun resetNoteAddedStatus() {

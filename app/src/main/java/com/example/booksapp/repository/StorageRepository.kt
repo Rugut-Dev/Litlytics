@@ -93,38 +93,6 @@ class StorageRepository {
         }
     }
 
-    /**
-    fun getAllNotes(isbn: String, isbnNo: String): Flow<NotesUiState> = callbackFlow {
-        var snapShotStateListener: ListenerRegistration? = null
-
-        try {
-            trySend(NotesUiState.Loading).isSuccess
-
-            snapShotStateListener = notesRef
-                .orderBy("page_ref")
-                .whereEqualTo("book_ref", isbnNo)
-                .addSnapshotListener { snapshot, e ->
-                    val response = if (snapshot != null) {
-                        //print out isbnNo in this function to logcat
-                        val notes = snapshot.toObjects(Notes::class.java)
-                        NotesUiState.Success(notes)
-                    } else {
-                        NotesUiState.Error(e?.cause)
-                    }
-                    trySend(response).isSuccess
-                }
-        } catch (e: Exception) {
-            trySend(NotesUiState.Error(e.cause)).isSuccess
-            e.printStackTrace()
-        }
-
-        awaitClose {
-            snapShotStateListener?.remove()
-        }
-    }
-
-**/
-
     //get note by id
     fun getNote(
         noteId: String,

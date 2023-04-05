@@ -34,7 +34,11 @@ fun NavGraph() {
     Box() {
         Scaffold(
             content = {
-                NavigationHost(navController = navController, authViewModel = AuthViewModel())
+                NavigationHost(
+                    navController = navController,
+                    authViewModel = AuthViewModel(),
+                    notesViewModel = NotesViewModel(repository = StorageRepository())
+                )
             },
             bottomBar = { /*BottomNavigationBar(navController = navController)*/ }
         )
@@ -43,7 +47,11 @@ fun NavGraph() {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun NavigationHost(navController: NavHostController, authViewModel: com.example.booksapp.viewModel.AuthViewModel){
+fun NavigationHost(
+    navController: NavHostController,
+    authViewModel: com.example.booksapp.viewModel.AuthViewModel,
+    notesViewModel: NotesViewModel
+){
 
     val actions = remember(navController) { MainActions(navController) }
     val context = LocalContext.current
@@ -105,7 +113,7 @@ fun NavigationHost(navController: NavHostController, authViewModel: com.example.
                 viewModel,
                 isbnNo,
                 notesViewModel = NotesViewModel(repository = StorageRepository()),
-                actions = actions
+                actions = actions,
             )
         }
         //My Activity
@@ -119,54 +127,27 @@ fun NavigationHost(navController: NavHostController, authViewModel: com.example.
         }
 
         //Upload
-        composable(NavRoutes.Upload.route){
-            UploadScreen(notesViewModel = NotesViewModel(repository = StorageRepository()),
+        composable(
+            route = NavRoutes.Upload.route + "?notes.documentId={id}",
+            arguments = listOf(navArgument("id") {
+                type = NavType.StringType
+                defaultValue = ""
+            })
+        ){entry->
+
+            UploadScreen(
+                notesViewModel = notesViewModel,
                 onNavigate = {
                     navController.navigate("library")
                 },
-                repository = StorageRepository(),
-                actions = actions
+                actions = actions,
+                noteId = entry.arguments?.getString("id") as String
             )
+
         }
+
     }
 }
-
-
-     /**
-
-        // Library
-        composable(NavRoutes.Library.route) {
-            val viewModel: MainViewModel = viewModel(
-                factory = HiltViewModelFactory(LocalContext.current, it)
-            )
-            viewModel.getAllBooks(context = context)
-            Library(viewModel, actions)
-        }
-      // Task Details
-        composable(
-            "${NavRoutes.BookDetails.route}/{id}",
-            arguments = listOf(navArgument(EndPoints.ID) { type = NavType.StringType })
-        ) {
-            val viewModel = hiltViewModel<MainViewModel>(it)
-            val isbnNo = it.arguments?.getString(EndPoints.ID)
-                ?: throw IllegalStateException("'Book ISBN No' shouldn't be null")
-
-            viewModel.getBookById(context = context, isbnNo = isbnNo)
-            //BookDetails(viewModel, actions)
-            BookDetails(viewModel,isbnNo ,actions)
-        }
-        //My Activity
-        composable(NavRoutes.MyActivity.route){
-            MyActivityScreen()
-        }
-
-        //Saved
-        composable(NavRoutes.Saved.route){
-            SavedScreen()
-        }
-    }
-}
-**/
 
 
 class MainActions(navController: NavController) {
@@ -190,32 +171,9 @@ class MainActions(navController: NavController) {
     val gotoUpload: () -> Unit = {
         navController.navigate(NavRoutes.Upload.route)
     }
-}
-
-
-/**
-@Composable
-fun MainScreen(){
-    val navController = rememberNavController()
-    Scaffold(
-        content = {NavigationHost(navController = navController)},
-        bottomBar = {BottomNavBar(navController = navController)}
-    )
-}
-
-
-@Composable
-fun NavigationHost(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = "activity") {
-        composable("activity") {
-            MyActivity()
-        }
-        composable("library") {
-            Library()
-        }
-        composable("saved") {
-            Saved()
-        }
+    //edit clicked
+    val gotoUploadEdit: (String) -> Unit = { noteId ->
+        navController.navigate("${NavRoutes.Upload.route}?notes.documentId=$noteId")
     }
 }
-        **/
+

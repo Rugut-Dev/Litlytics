@@ -128,24 +128,7 @@ fun Library(viewModel: MainViewModel, actions: MainActions, notesViewModel: Note
         )
     }
 }
-/**
 
-
-@ExperimentalComposeUiApi
-@Composable
-fun Library(viewModel: MainViewModel, actions: MainActions) {
-
-    val booksState by viewModel.books.collectAsState(initial = ViewState.Loading)
-    when(val result = booksState){
-        ViewState.Empty -> Text(text ="No Books Found!")
-        is ViewState.Error -> Text(text = "Error Occurred: ${result.exception}")
-        ViewState.Loading -> Text(text = "Loading...")
-        is ViewState.Success -> {
-            BookList(result.data, actions)
-        }
-    }
-}
- **/
 @ExperimentalComposeUiApi
 @Composable
 fun BookList(bookList: List<BookItem>, actions: MainActions) {
@@ -182,62 +165,4 @@ fun BookList(bookList: List<BookItem>, actions: MainActions) {
         }
 
     }
-
-    /**
-    FloatingActionButton(
-        onClick = { /* do something */ },
-        modifier = Modifier
-            .size(56.dp)
-            .padding(16.dp)
-            .align()
-    ) {
-        Icon(
-            imageVector = Icons.Filled.Add,
-            contentDescription = "Add"
-        )
-    }
-    **/
 }
-
-/**
-@Composable
-fun BookList(bookViewModel: BookViewModel = viewModel()) {
-val books = bookViewModel.getBooks()
-LazyColumn {
-items(books) { book ->
-Card(
-modifier = Modifier
-.fillMaxWidth()
-.padding(16.dp),
-elevation = 8.dp,
-shape = MaterialTheme.shapes.medium
-) {
-Row(
-modifier = Modifier.padding(16.dp)
-) {
-Image(
-painter = painterResource(id = R.drawable.book_cover),
-contentDescription = "Book cover",
-contentScale = ContentScale.Crop,
-modifier = Modifier
-.size(96.dp, 128.dp)
-.padding(end = 16.dp)
-)
-
-Column {
-Text(
-text = book.title,
-style = MaterialTheme.typography.h5
-)
-
-Text(
-text = "By ${book.author}",
-style = MaterialTheme.typography.subtitle1
-)
-}
-}
-}
-}
-}
-}
- **/
