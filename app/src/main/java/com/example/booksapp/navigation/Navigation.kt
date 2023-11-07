@@ -17,6 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.booksapp.BottomNavigationBar
 import com.example.booksapp.repository.StorageRepository
 import com.example.booksapp.view.*
 import com.example.booksapp.viewModel.AuthViewModel
@@ -40,7 +41,7 @@ fun NavGraph() {
                     notesViewModel = NotesViewModel(repository = StorageRepository())
                 )
             },
-            bottomBar = { /*BottomNavigationBar(navController = navController)*/ }
+            bottomBar = { BottomNavigationBar(navController = navController) }
         )
     }
 }
